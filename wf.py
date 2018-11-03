@@ -40,7 +40,7 @@ all_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "hcfd:n:x:p:v:") #h, c, f不需要带参数
+        opts, args = getopt.getopt(argv, "hcfdsn:x:p:v:") #h, c, f不需要带参数
     except getopt.GetoptError:
         logging.error('usage : wf.py -c <count> -f <frequency> -d <directory> -n <number> -x <stopword file> -p <number2> -v <verb file>')
         sys.exit(1)
@@ -51,6 +51,7 @@ def main(argv):
     flag_x = False
     flag_p = False
     flag_v = False
+    flag_s = False
     for opt, arg in opts:
         if opt == '-h':
             logging.info('usage : wf.py -c <count> -f <frequency> -d <directory> -n <number> -x <stopword file> -p <number2> -v <verb file>')
@@ -60,8 +61,9 @@ def main(argv):
         elif opt in ("-f"):
             flag_f = True
         elif opt in ("-d"):
-            directory_name = arg
             flag_d = True
+        elif opt in ("-s"):
+            flag_s = True
         elif opt in ("-n"):
             top_number = arg
             flag_n = True
@@ -80,15 +82,19 @@ def main(argv):
     
     
     txt_file_list = [] # txt_file_list stores the txt files' names
-    if flag_d==False:
-        filename = args
-        current_folder = './'
-        txt_file_list.append(os.path.join(current_folder, filename[0]))
-    else:
+    if flag_d == True:
+        directory_name = args[0]
         file_list = os.listdir(str(directory_name))
         for i, elem in enumerate(file_list):
             if os.path.splitext(elem)[1] == '.txt':
                 txt_file_list.append(os.path.join(directory_name, elem))
+    elif flag_s == True:
+        directory_name = args[0]
+        eachFile(str(directory_name), txt_file_list)
+    else:
+        filename = args
+        current_folder = './'
+        txt_file_list.append(os.path.join(current_folder, filename[0]))
     
     for file_index in range(len(txt_file_list)):
 
@@ -145,6 +151,19 @@ def main(argv):
         else:
             print_word_dict(results, txt_file_list[file_index])
         
+
+def eachFile(filepath, txt_file_list):
+    pathDir = os.listdir(filepath)      #获取当前路径下的文件名，返回List
+    for s in pathDir:
+        newDir=os.path.join(filepath,s)     #将文件命加入到当前文件路径后面
+        if os.path.isfile(newDir) :         #如果是文件
+            if os.path.splitext(newDir)[1]==".txt":  #判断是否是txt
+                txt_file_list.append(newDir)                     #读文件
+            else:
+                pass
+        else:
+            eachFile(newDir, txt_file_list)                #如果不是文件，递归这个文件夹的路径
+
 
 def is_lower_letter(chatr):
     return 97 <= ord(chatr) <= 122
