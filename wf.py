@@ -188,9 +188,34 @@ def calculate_character_freq_after_v(all_lines):
                 chatr_dict[chatr] += 1
     return chatr_dict
 
+all_digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+all_spaces = {'\t', '\r', '\n', ' '}
+all_lower_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
+all_upper_letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+all_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+
 def calculate_word_freq(filename):
     word_dict = {}
     with open(filename, 'r', encoding='utf-8') as in_file:
+        all_chatrs = in_file.read()
+        started = False
+        word = ""
+        for chatr in all_chatrs:
+            if (not started) and (chatr in all_letters):
+                started = True
+                word += chatr.lower()
+            elif started and ( (chatr in all_letters) or (chatr in all_digits) ):
+                word += chatr.lower()
+            elif started:
+                started = False
+                if word in word_dict.keys():
+                    word_dict[word] += 1
+                else:
+                    word_dict[word] = 1
+                word = ""
+            else:
+                pass
+        '''
         all_lines = in_file.readlines()
         for sentence in all_lines:
             #length = len(item)
@@ -212,6 +237,7 @@ def calculate_word_freq(filename):
                     word = ""
                 else:
                     pass
+        '''
     return word_dict
 
 def calculate_word_freq_after_v(all_lines):
