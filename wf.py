@@ -283,6 +283,58 @@ def calculate_phrase_freq(filename, phrase_length):
         for chatr in all_contents:
             # sentence = sentence
             # for chatr in sentence:
+            if started:
+                if (chatr in all_lower_letters) or (chatr in all_digits):
+                    current_word += chatr
+                elif (chatr in all_spaces) and current_word:
+                    #previous_words.append(current_word) keep method as less as possible
+                    previous_words += [current_word]
+                    previous_words_num += 1
+                    current_word = ""
+                    if previous_words_num == phrase_length:
+                        #phrase = ""
+                        #for previous_word in previous_words:
+                        #    phrase += previous_word
+                        #    phrase += ' '
+                        #phrase = phrase[:-1]
+                        phrase = ' '.join(previous_words)
+
+                        if phrase in phrase_dict.keys():
+                            phrase_dict[phrase] += 1
+                        else:
+                            phrase_dict[phrase] = 1
+                        previous_words = previous_words[1:]
+                        #previous_words.pop(0)
+                        previous_words_num -= 1
+                elif chatr in all_upper_letters:
+                    current_word += chatr.lower()
+                else:
+                    if current_word:
+                        previous_words.append(current_word)
+                        previous_words_num += 1
+                        if previous_words_num == phrase_length:
+                            phrase = ' '.join(previous_words)
+                            if phrase in phrase_dict.keys():
+                                phrase_dict[phrase] += 1
+                            else:
+                                phrase_dict[phrase] = 1
+                    started = False
+                    previous_words = []
+                    previous_words_num = 0
+                    current_word = ""
+            else:
+                if chatr in all_lower_letters:
+                    started = True
+                    current_word += chatr
+                elif chatr in all_upper_letters:
+                    started = True
+                    current_word += chatr.lower()
+                else:
+                    pass
+
+
+            '''
+            
             if started == False and (is_lower_letter(chatr) or is_upper_letter(chatr)):
                 started = True
                 current_word += chatr.lower()
@@ -317,6 +369,7 @@ def calculate_phrase_freq(filename, phrase_length):
                 current_word = ""
             else:
                 pass
+            '''
     return phrase_dict
 
 def calculate_phrase_freq_after_v(all_lines, phrase_length):
@@ -518,9 +571,9 @@ def print_dict(input_dict, reverse=True):
 def print_word_dict(input_dict, filename, reverse=True):
     total = sum(input_dict.values())
     word_list = [(key, input_dict[key]) for key in input_dict.keys()]
-    sorted_input_dict = sorted(word_list, key=operator.itemgetter(0) , reverse=False)
-    sorted_input_dict = sorted(sorted_input_dict, key=operator.itemgetter(1) , reverse=True)
-    for key, value in sorted_input_dict[:50]:
+    word_list.sort(key=operator.itemgetter(0), reverse=False)
+    word_list.sort(key=operator.itemgetter(1), reverse=True)
+    for key, value in word_list:
         #a = "I'm %s. I'm %d year old" % ('Vamei', 99)
         #print(key + ': ' + str(value/total) + ',' + str(value))
         print("%40s\t%d" % (key, value))
@@ -528,11 +581,11 @@ def print_word_dict(input_dict, filename, reverse=True):
 def print_word_dict_top_n(input_dict, filename, top_number, reverse=True):
     total = sum(input_dict.values())
     word_list = [(key, input_dict[key]) for key in input_dict.keys()]
-    sorted_input_dict = sorted(word_list, key=operator.itemgetter(0) , reverse=False)
-    sorted_input_dict = sorted(sorted_input_dict, key=operator.itemgetter(1) , reverse=True)
+    word_list.sort(key=operator.itemgetter(0) , reverse=False)
+    word_list.sort(key=operator.itemgetter(1), reverse=True)
     top_number = int(top_number)
     print(filename)
-    for key, value in sorted_input_dict[:top_number]:
+    for key, value in word_list[:top_number]:
         #print(key + ': ' + str(value/total) + ',' + str(value))
         print("%40s\t%d" % (key, value))
 
