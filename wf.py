@@ -31,6 +31,13 @@ sys.stderr = io.TextIOWrapper(sys.stderr.detach(), encoding='utf-8')
 #import logging
 #logging.getLogger().setLevel(logging.INFO)
 
+all_digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+all_spaces = {'\t', '\r', '\n', ' '}
+all_lower_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
+all_upper_letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+all_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+
+
 def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hcfd:n:x:p:v:") #h, c, f不需要带参数
@@ -108,17 +115,14 @@ def main(argv):
         
         else: #flag_x==False:
             if flag_v:
-                all_lines = unify_verb(txt_file_list[file_index], verb_file)
-
                 if flag_p:
-                    results = calculate_phrase_freq_after_v(all_lines, int(phrase_length))
+                    results = calculate_phrase_freq_with_v(txt_file_list[file_index], verb_file, int(phrase_length))
 
                 elif flag_c:
-                    results = calculate_character_freq_after_v(all_lines)
-
+                    results = calculate_character_freq_with_v(txt_file_list[file_index], verb_file)
 
                 elif flag_f:
-                    results = calculate_word_freq_after_v(all_lines)
+                    results = calculate_word_freq_with_v(txt_file_list[file_index], verb_file)
                 
                 else:
                     raise ValueError("You must specify one of the <-f -c -p>")
@@ -159,13 +163,6 @@ def is_space(chatr):
 def calculate_character_freq(filename):
     chatr_dict = dict.fromkeys(string.ascii_letters, 0)
     with open(filename, 'r', encoding='utf-8') as in_file:
-        '''
-        all_lines = in_file.readlines()
-        for item in all_lines:
-            for chatr in item:
-                if chatr in string.ascii_letters:
-                    chatr_dict[chatr] += 1
-        '''
         #read() is faster than readlines if we do not need [line1, line2, ...] 141
         all_chatrs = in_file.read()
         for chatr in all_chatrs:
@@ -173,10 +170,47 @@ def calculate_character_freq(filename):
                 chatr_dict[chatr] += 1
             except:
                 pass
+    return chatr_dict
 
+def calculate_character_freq_with_v(filename, verb_file):
+    verb_dict = get_verb_format_dict(verb_file)
+    chatr_dict = dict.fromkeys(string.ascii_letters, 0)
+    with open(filename, 'r', encoding='utf-8') as in_file:
+        all_chatrs = in_file.read()
+        started = False
+        word = ""
+        raw_word = ""
+        for chatr in all_chatrs:
+            if started:
+                if (chatr in all_lower_letters):
+                    word += chatr
+                    raw_word += chatr
+                elif chatr in all_upper_letters:
+                    word += chatr.lower()
+                    raw_word += chatr
+                else:
 
-            #if chatr in string.ascii_letters: 125
-            #    chatr_dict[chatr] += 1
+                    try:
+                        origin_verb = verb_dict[word]
+                    except:
+                        origin_verb = raw_word
+                    for item in origin_verb:
+                        chatr_dict[item] += 1
+                    started = False
+                    word = ""
+                    raw_word = ""
+            else:
+                if chatr in all_lower_letters:
+                    started = True
+                    word += chatr
+                    raw_word += chatr
+                elif chatr in all_upper_letters:
+                    started = True
+                    word += chatr.lower()
+                    raw_word += chatr
+                else:
+                    pass
+            #replaced_lines.append(replaced_sentance)
     return chatr_dict
 
 
@@ -188,11 +222,6 @@ def calculate_character_freq_after_v(all_lines):
                 chatr_dict[chatr] += 1
     return chatr_dict
 
-all_digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
-all_spaces = {'\t', '\r', '\n', ' '}
-all_lower_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
-all_upper_letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
-all_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
 
 def calculate_word_freq(filename):
     word_dict = {}
@@ -224,28 +253,43 @@ def calculate_word_freq(filename):
                     word += chatr.lower()
                 else:
                     pass
+    return word_dict
 
-               
-        '''
+def calculate_word_freq_with_v(filename, verb_file):
+    verb_dict = get_verb_format_dict(verb_file)
+    word_dict = {}
+    with open(filename, 'r', encoding='utf-8') as in_file:
+
         all_chatrs = in_file.read()
         started = False
         word = ""
+
         for chatr in all_chatrs:
-            if (not started) and (chatr in all_letters):
-                started = True
-                word += chatr.lower()
-            elif started and ( (chatr in all_letters) or (chatr in all_digits) ):
-                word += chatr.lower()
-            elif started:
-                started = False
-                if word in word_dict.keys():
-                    word_dict[word] += 1
+            if started:
+                if (chatr in all_lower_letters) or (chatr in all_digits):
+                    word += chatr
+                elif chatr in all_upper_letters:
+                    word += chatr.lower()
                 else:
-                    word_dict[word] = 1
-                word = ""
+                    try:
+                        origin_verb = verb_dict[word]
+                    except:
+                        origin_verb = word
+                    try:
+                        word_dict[origin_verb] += 1
+                    except:
+                        word_dict[origin_verb] = 1
+                    started = False
+                    word = ""
             else:
-                pass
-        '''
+                if chatr in all_lower_letters:
+                    started = True
+                    word += chatr
+                elif chatr in all_upper_letters:
+                    started = True
+                    word += chatr.lower()
+                else:
+                    pass
     return word_dict
 
 def calculate_word_freq_after_v(all_lines):
@@ -292,11 +336,6 @@ def calculate_phrase_freq(filename, phrase_length):
                     previous_words_num += 1
                     current_word = ""
                     if previous_words_num == phrase_length:
-                        #phrase = ""
-                        #for previous_word in previous_words:
-                        #    phrase += previous_word
-                        #    phrase += ' '
-                        #phrase = phrase[:-1]
                         phrase = ' '.join(previous_words)
 
                         if phrase in phrase_dict.keys():
@@ -310,7 +349,7 @@ def calculate_phrase_freq(filename, phrase_length):
                     current_word += chatr.lower()
                 else:
                     if current_word:
-                        previous_words.append(current_word)
+                        previous_words += [current_word]
                         previous_words_num += 1
                         if previous_words_num == phrase_length:
                             phrase = ' '.join(previous_words)
@@ -332,44 +371,72 @@ def calculate_phrase_freq(filename, phrase_length):
                 else:
                     pass
 
+    return phrase_dict
 
-            '''
-            
-            if started == False and (is_lower_letter(chatr) or is_upper_letter(chatr)):
-                started = True
-                current_word += chatr.lower()
-            elif started and (is_digit(chatr) or is_lower_letter(chatr) or is_upper_letter(chatr)):
-                current_word += chatr.lower()
-            elif started and is_space(chatr) and current_word:
-                previous_words.append(current_word)
-                previous_words_num += 1
-                current_word = ""
-                if previous_words_num == phrase_length:
-                    phrase = ' '.join(previous_words)
-                    if phrase in phrase_dict.keys():
-                        phrase_dict[phrase] += 1
-                    else:
-                        phrase_dict[phrase] = 1
-                    previous_words.pop(0)
-                    previous_words_num -= 1
+def calculate_phrase_freq_with_v(filename, verb_file, phrase_length):
+    verb_dict = get_verb_format_dict(verb_file)
+    phrase_dict = {}
+    with open(filename, 'r', encoding='utf-8') as in_file:
 
-            elif started and not (is_space(chatr)):
-                if current_word:
-                    previous_words.append(current_word)
+        all_chatrs = in_file.read()
+        started = False
+        previous_words = []
+        previous_words_num = 0
+        current_word = ""
+        for chatr in all_chatrs:
+            # sentence = sentence
+            # for chatr in sentence:
+            if started:
+                if (chatr in all_lower_letters) or (chatr in all_digits):
+                    current_word += chatr
+                elif (chatr in all_spaces) and current_word:
+                    # previous_words.append(current_word) keep method as less as possible
+                    try:
+                        origin_verb = verb_dict[current_word]
+                    except:
+                        origin_verb = current_word
+                    previous_words += [origin_verb]
                     previous_words_num += 1
+                    current_word = ""
                     if previous_words_num == phrase_length:
                         phrase = ' '.join(previous_words)
+
                         if phrase in phrase_dict.keys():
                             phrase_dict[phrase] += 1
                         else:
                             phrase_dict[phrase] = 1
-                started = False
-                previous_words = []
-                previous_words_num = 0
-                current_word = ""
+                        previous_words = previous_words[1:]
+                        # previous_words.pop(0)
+                        previous_words_num -= 1
+                elif chatr in all_upper_letters:
+                    current_word += chatr.lower()
+                else:
+                    if current_word:
+                        try:
+                            origin_verb = verb_dict[current_word]
+                        except:
+                            origin_verb = current_word
+                        previous_words += [origin_verb]
+                        previous_words_num += 1
+                        if previous_words_num == phrase_length:
+                            phrase = ' '.join(previous_words)
+                            if phrase in phrase_dict.keys():
+                                phrase_dict[phrase] += 1
+                            else:
+                                phrase_dict[phrase] = 1
+                    started = False
+                    previous_words = []
+                    previous_words_num = 0
+                    current_word = ""
             else:
-                pass
-            '''
+                if chatr in all_lower_letters:
+                    started = True
+                    current_word += chatr
+                elif chatr in all_upper_letters:
+                    started = True
+                    current_word += chatr.lower()
+                else:
+                    pass
     return phrase_dict
 
 def calculate_phrase_freq_after_v(all_lines, phrase_length):
@@ -416,24 +483,27 @@ def calculate_phrase_freq_after_v(all_lines, phrase_length):
             pass
     return phrase_dict
 
-def unify_verb(filename, verb_file):
+def get_verb_format_dict(verb_file):
     verb_dict = {}
     with open(verb_file, 'r', encoding='utf-8') as infile:
         all_verb_lines = infile.readlines()
         for verb_line in all_verb_lines:
             verb_info = verb_line.strip().split(' -> ')
             deformed_verbs = verb_info[1].split(',')
-            try:
-                assert len(deformed_verbs) > 0
-            except AssertionError:
-                raise AssertionError(verb_info[0])
             origin_verb = verb_info[0]
             for deformed_verb in deformed_verbs:
+                verb_dict[deformed_verb] = origin_verb
+                ''' ignore condition that one deformed_verb has 2 origin_verb
                 if deformed_verb in verb_dict.keys():
                     pass
-                    #raise ValueError("deformed verb" + deformed_verb + " has more than one origin verb!")
+                    # raise ValueError("deformed verb" + deformed_verb + " has more than one origin verb!")
                 else:
                     verb_dict[deformed_verb] = origin_verb
+                '''
+    return verb_dict
+
+def unify_verb(filename, verb_file):
+    verb_dict = get_verb_format_dict(verb_file)
     replaced_lines = []
     with open(filename, 'r', encoding='utf-8') as in_file:
         all_lines = in_file.readlines()
