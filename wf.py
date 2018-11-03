@@ -1,7 +1,6 @@
 #-*- coding:UTF-8 -*-
 #import cProfile as profile
 
-`
 # In outer section of code
 #pr = profile.Profile()
 #pr.disable()
@@ -160,11 +159,24 @@ def is_space(chatr):
 def calculate_character_freq(filename):
     chatr_dict = dict.fromkeys(string.ascii_letters, 0)
     with open(filename, 'r', encoding='utf-8') as in_file:
+        '''
         all_lines = in_file.readlines()
         for item in all_lines:
             for chatr in item:
                 if chatr in string.ascii_letters:
                     chatr_dict[chatr] += 1
+        '''
+        #read() is faster than readlines if we do not need [line1, line2, ...] 141
+        all_chatrs = in_file.read()
+        for chatr in all_chatrs:
+            try:
+                chatr_dict[chatr] += 1
+            except:
+                pass
+
+
+            #if chatr in string.ascii_letters: 125
+            #    chatr_dict[chatr] += 1
     return chatr_dict
 
 
