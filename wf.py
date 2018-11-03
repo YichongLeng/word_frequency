@@ -197,6 +197,36 @@ all_letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
 def calculate_word_freq(filename):
     word_dict = {}
     with open(filename, 'r', encoding='utf-8') as in_file:
+
+        all_chatrs = in_file.read()
+        started = False
+        word = ""
+
+        for chatr in all_chatrs:
+            if started:
+                if (chatr in all_lower_letters) or (chatr in all_digits) :
+                    word += chatr
+                elif chatr in all_upper_letters:
+                    word += chatr.lower()
+                else:
+                    started = False
+                    try:
+                        word_dict[word] += 1
+                    except:
+                        word_dict[word] = 1
+                    word = ""
+            else:
+                if chatr in all_lower_letters:
+                    started = True
+                    word += chatr
+                elif chatr in all_upper_letters:
+                    started = True
+                    word += chatr.lower()
+                else:
+                    pass
+
+               
+        '''
         all_chatrs = in_file.read()
         started = False
         word = ""
@@ -215,28 +245,6 @@ def calculate_word_freq(filename):
                 word = ""
             else:
                 pass
-        '''
-        all_lines = in_file.readlines()
-        for sentence in all_lines:
-            #length = len(item)
-            started = False
-            word = ""
-            #sentence = sentence
-            for chatr in sentence:
-                if started == False and ( is_lower_letter(chatr) or is_upper_letter(chatr) ):
-                    started = True
-                    word += chatr.lower()
-                elif started and ( is_digit(chatr) or is_lower_letter(chatr) or is_upper_letter(chatr) ):
-                    word += chatr.lower()
-                elif started and not ( is_digit(chatr) or is_lower_letter(chatr) or is_upper_letter(chatr) ):
-                    started = False
-                    if word in word_dict.keys():
-                        word_dict[word] += 1
-                    else:
-                        word_dict[word] = 1
-                    word = ""
-                else:
-                    pass
         '''
     return word_dict
 
